@@ -20,7 +20,7 @@ This MCP server provides tools to search for content, and access OCI documentati
 
 ## Installation
 
-To add this MCP server to your Amazon Q or Claude, add the following to your MCP config file. With Amazon Q, create (if does not yet exist) a file named `.amazonq/mcp.json` under the same directory that is running `q chat`. Then add the following config:
+MCP config:
 
 ```json
 {

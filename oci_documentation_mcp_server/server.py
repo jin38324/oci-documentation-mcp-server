@@ -166,7 +166,7 @@ async def search_documentation(
 async def read_documentation(
     ctx: Context,
     url: str = Field(description='URL of the OCI documentation page to read'),
-    #url: Union[AnyUrl, str] = Field(description='URL of the AWS documentation page to read'),
+    #url: Union[AnyUrl, str] = Field(description='URL of the OCI documentation page to read'),
     max_length: int = Field(
         default=5000,
         description='Maximum number of characters to return.',
@@ -183,7 +183,7 @@ async def read_documentation(
 
     ## Usage
 
-    This tool retrieves the content of an AWS documentation page and converts it to markdown format.
+    This tool retrieves the content of an OCI documentation page and converts it to markdown format.
     For long documents, you can make multiple calls with different start_index values to retrieve
     the entire content in chunks.
 
@@ -213,12 +213,12 @@ async def read_documentation(
 
     Args:
         ctx: MCP context for logging and error handling
-        url: URL of the AWS documentation page to read
+        url: URL of the OCI documentation page to read
         max_length: Maximum number of characters to return
         start_index: On return output starting at this character index
 
     Returns:
-        Markdown content of the AWS documentation
+        Markdown content of the OCI documentation
     """
     # Validate that URL is from docs.oracle.com and ends with .htm
     url_str = str(url)
@@ -275,7 +275,7 @@ async def read_documentation(
 def main():
     """Run the MCP server with CLI argument support."""
     parser = argparse.ArgumentParser(
-        description='An AWS Labs Model Context Protocol (MCP) server for AWS Documentation'
+        description='An OCI Labs Model Context Protocol (MCP) server for OCI Documentation'
     )
     parser.add_argument('--sse', action='store_true', help='Use SSE transport')
     parser.add_argument('--port', type=int, default=8888, help='Port to run the server on')
