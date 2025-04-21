@@ -38,9 +38,36 @@ MCP config:
 }
 ```
 
+
+It may be a little more complicated on Windows:
+
+```json
+{
+  "mcpServers": {
+      "oci-documentation-mcp-server": {
+        "command": "uvx",
+        "args": [
+          "--from",
+          "oci-documentation-mcp-server@latest",
+          "python",
+          "-m",
+          "oci_documentation_mcp_server.server"
+        ],
+        "env": {
+          "FASTMCP_LOG_LEVEL": "ERROR"
+        },
+        "disabled": false,
+        "autoApprove": []
+    },
+  }
+}
+```
+
 ## Basic Usage
 Example:
- - "look up documentation on Object bucket naming rule. cite your sources"
+ - In Cursor ask: `Write a function to download files for OCI Object Storage.`
+
+ ![Cursor_MCP](./image/Cursor_MCP.gif)
  
 
 
