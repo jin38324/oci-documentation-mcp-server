@@ -39,7 +39,7 @@ MCP config:
 ```
 
 
-It may be a little more complicated on Windows:
+If above doesn't work, try below one:
 
 ```json
 {
