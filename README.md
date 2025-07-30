@@ -1,5 +1,7 @@
 *Inspired by: https://github.com/awslabs/mcp/tree/main/src/aws-documentation-mcp-server*
 
+[![MCPHub.com Badge](https://mcphub.com/api/mcp-servers/jin38324/oci-documentation-mcp-server/badge)](https://mcphub.com/mcp-servers/jin38324/oci-documentation-mcp-server)
+
 # OCI Documentation MCP Server
 
 Model Context Protocol (MCP) server for OCI Documentation
