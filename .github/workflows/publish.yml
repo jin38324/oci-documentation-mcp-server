@@ -1,8 +1,9 @@
-name: Publish Python Package to PyPI on Release
+name: Publish Python Package to PyPI
 
 on:
   release:
-    types: [created]
+    types: [published]
+  workflow_dispatch:
 
 jobs:
   publish-to-pypi:
@@ -22,21 +23,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: Upgrade build tools
-        run: |
-          python -m pip install --upgrade pip
-
-      - name: Install build backend
-        run: |
-          pip install build
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Build distributions
-        # 这里自动从 pyproject.toml 读取配置，生成 sdist + wheel
-        run: |
-          python -m build --sdist --wheel
+        run: uv build
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
