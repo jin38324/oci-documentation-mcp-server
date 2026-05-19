@@ -75,18 +75,31 @@ Example:
 
 ## Tools
 
-### read_documentation
+### oci_search_documentation
 
-Fetches an OCI documentation page and converts it to markdown format.
+Searches OCI documentation based on a search phrase.
 
 ```python
-read_documentation(url: str) -> str
+oci_search_documentation(search_phrase: str, limit: int = 3, page: int = 1) -> str
 ```
 
-### search_documentation
+### oci_read_documentation
 
-Searches OCI documentation using the search engine.
+Fetches an OCI documentation page and returns content partially as markdown.
 
 ```python
-search_documentation(search_phrase: str, limit: int) -> list[dict]
+oci_read_documentation(url: str, start_index: int = 0, max_lines: int = 10) -> str
+```
+
+**Parameters:**
+- `url`: URL of the OCI documentation page to read (must be from docs.oracle.com and end with .htm or .html)
+- `start_index`: Line number to start reading from (default: 0)
+- `max_lines`: Maximum number of lines to return (default: 10)
+
+
+
+## DEV
+
+```bash
+run --directory "D:/MCP/oci-documentation-mcp-server" "oci_documentation_mcp_server/server.py"
 ```

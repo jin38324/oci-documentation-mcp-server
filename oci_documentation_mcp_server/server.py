@@ -11,88 +11,55 @@
 """OCI Documentation MCP Server implementation."""
 
 import argparse
-import httpx
 import os
 import re
 import sys
-from googlesearch import search
 
-# Import models
-from oci_documentation_mcp_server.models import (
-    SearchResult,
-)
+from oci_documentation_mcp_server.ohc_search import search_oci_documentation
 
 # Import utility functions
 from oci_documentation_mcp_server.util import (
-    extract_content_from_html,
     format_documentation_result,
-    is_html_content
 )
 from loguru import logger
 from mcp.server.fastmcp import Context, FastMCP
-from pydantic import AnyUrl, Field
-from typing import List, Union
+from pydantic import Field
 
 
 # Set up logging
 logger.remove()
 logger.add(sys.stderr, level=os.getenv('FASTMCP_LOG_LEVEL', 'WARNING'))
 
-DEFAULT_HEADERS = {
-    "user-agent":'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
-    "sec-ch-ua-mobile":'?0',
-    "sec-ch-ua":'"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
-    "accept-language":'*/en-US,en;q=0.9',
-    'Content-Type': 'application/json',
-    }
-# SEARCH_API_URL = 'https://docs.oracle.com/apps/ohcsearchclient/api/v2/search/pages'
-# SEARCH_PARAMS = {
-#     "q": None,
-#     "size": None,        
-#     "pg": 1,
-#     "product": "en/cloud/oracle-cloud-infrastructure",
-#     "showfirstpage": "true",
-#     "lang": "en",
-#     "snippet": "true"
-#     }
-
-
 mcp = FastMCP(
     'oci-documentation-mcp-server',
     instructions="""
     # OCI Documentation MCP Server
 
-    This server provides tools to access public OCI documentation, search for content, and get recommendations.
+    This server provides tools to access public OCI documentation and search for content.
 
     ## Best Practices
 
-    - For long documentation pages, make multiple calls to `read_documentation` with different `start_index` values for pagination
-    - For very long documents (>30,000 characters), stop reading if you've found the needed information
+    - For long documentation pages, make multiple calls to `oci_read_documentation` with different `start_index` line numbers for pagination
+    - For very long documents, stop reading if you've found the needed information
     - When searching, use specific technical terms rather than general phrases
-    - Use `recommend` tool to discover related content that might not appear in search results
-    - For recent updates to a service, get an URL for any page in that service, then check the **New** section of the `recommend` tool output on that URL
-    - If multiple searches with similar terms yield insufficient results, pivot to using `recommend` to find related pages.
     - Always cite the documentation URL when providing information to users
 
     ## Tool Selection Guide
 
-    - Use `search_documentation` when: You need to find documentation about a specific OCI service or feature
-    - Use `read_documentation` when: You have a specific documentation URL and need its content
-    - Use `recommend` when: You want to find related content to a documentation page you're already viewing or need to find newly released information
-    - Use `recommend` as a fallback when: Multiple searches have not yielded the specific information needed
+    - Use `oci_search_documentation` when: You need to find documentation about a specific OCI service or feature
+    - Use `oci_read_documentation` when: You have a specific documentation URL and need its content
     """,
     dependencies=[
         'pydantic',
         'httpx',
         'beautifulsoup4',
-        'googlesearch-python'
     ],
 )
 
 
 
 @mcp.tool()
-async def search_documentation(
+async def oci_search_documentation(
     ctx: Context,
     search_phrase: str = Field(description='Search phrase to use'),
     limit: int = Field(
@@ -101,121 +68,80 @@ async def search_documentation(
         ge=1,
         le=10,
         ),
-    ) -> List[SearchResult]:
-    """Search OCI documentation using the OCI Documentation Search API.
+    page: int = Field(
+        default=1,
+        description='Page number to return',
+        ge=1,
+        ),
+    ) -> str:
+    """Search OCI documentation based on a search phrase.
 
     ## Usage
 
-    This tool searches across all OCI documentation for pages matching your search phrase.
-    Use it to find relevant documentation when you don't have a specific URL.
+    This tool searches OCI documentation pages matching your search phrase.
+    Use it to find relevant documentation urls about OCI Productswhen you don't have a specific URL.
 
     ## Search Tips
 
-    - Use specific technical terms rather than general phrases
+    - Use specific product name/technical terms rather than general phrases
     - Include service names to narrow results (e.g., "OCI Object Storage bucket versioning" instead of just "versioning")
     - Use quotes for exact phrase matching (e.g., "Using Instance Configurations and Instance Pools")
-    - Include abbreviations and alternative terms to improve results
-
-    ## Result Interpretation
-
-    Each result includes:
-    - score: The relevance score (higher is more relevant)
-    - url: The documentation page URL
-    - description: A brief excerpt or summary
-    - body: Related text snippets
-
+ 
     Args:
-        ctx: MCP context for logging and error handling
-        search_phrase: Search phrase to use
+        search_phrase: The backend breaks up the search string to find content with the most matching words. The order of terms can impact the results. Quotes can be used to indicate required terms.
         limit: Maximum number of results to return
+        page: Page number to return
 
     Returns:
-        List of search results with URLs, titles, and context snippets
+    - pagination: Pagination information
+    - results: List of search results with URLs, titles, and descriptions
     """
-    logger.error(f'Searching OCI documentation for: {search_phrase}')
+    logger.info(f'Searching OCI documentation for: {search_phrase}')
 
     try:
-        response = search(
-            f"{search_phrase} site:docs.oracle.com", 
-             advanced=True, 
-             num_results=limit
-             )
-        
+        ohc_search_response = await search_oci_documentation(
+            search_phrase,
+            limit,
+            page,
+        )
+        logger.info(f'Found {len(ohc_search_response.results)} search results for: {search_phrase}')
+        return ohc_search_response.model_dump_json()
     except Exception as e:
         error_msg = f'Error searching OCI docs: {str(e)}'
         logger.error(error_msg)
         await ctx.error(error_msg)
-        return [SearchResult(title='', url='', description=error_msg)]    
-
-    results = []
-    if response:
-        for i in response:
-            results.append(
-                SearchResult(
-                    title=i.title,
-                    url=i.url,
-                    description=i.description
-                )
-            )
-
-    logger.debug(f'Found {len(results)} search results for: {search_phrase}')
-    return results
+        return "No search results found. Please try a different search phrase."    
 
 
 @mcp.tool()
-async def read_documentation(
+async def oci_read_documentation(
     ctx: Context,
     url: str = Field(description='URL of the OCI documentation page to read'),
-    #url: Union[AnyUrl, str] = Field(description='URL of the OCI documentation page to read'),
-    max_length: int = Field(
-        default=5000,
-        description='Maximum number of characters to return.',
-        gt=0,
-        lt=1000000,
-    ),
     start_index: int = Field(
         default=0,
-        description='On return output starting at this character index, useful if a previous fetch was truncated and more content is required.',
+        description='On return output starting at this line number, useful if a previous fetch was truncated and more content is required.',
         ge=0,
     ),
+    max_lines: int = Field(
+        default=10,
+        description='Maximum number of lines to return.',
+        gt=0,
+        lt=1000000,
+    )
 ) -> str:
-    """Fetch and convert an OCI documentation page to markdown format.
-
-    ## Usage
-
-    This tool retrieves the content of an OCI documentation page and converts it to markdown format.
-    For long documents, you can make multiple calls with different start_index values to retrieve
-    the entire content in chunks.
-
-    ## URL Requirements
-
-    - Must be from the https://docs.oracle.com/ domain
-    - Must end with .html or .htm
-
-    ## Example URLs
-
-    - https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/objectstorageoverview.htm
-    - https://docs.oracle.com/en-us/iaas/Content/Compute/References/bestpracticescompute.htm
-
-    ## Output Format
-
-    The output is formatted as markdown text with:
-    - Preserved headings and structure
-    - Code blocks for examples
-    - Lists and tables converted to markdown format
+    """Fetch an OCI documentation page url and return content partially as markdown.
 
     ## Handling Long Documents
 
     If the response indicates the document was truncated, you have several options:
 
-    1. **Continue Reading**: Make another call with start_index set to the end of the previous response
-    2. **Stop Early**: For very long documents (>30,000 characters), if you've already found the specific information needed, you can stop reading
+    1. **Continue Reading**: Make another call with `start_index` set to retrieve the next portion of the document.
+    2. **Stop Early**: If you've already found the specific information needed, you can stop reading
 
     Args:
-        ctx: MCP context for logging and error handling
-        url: URL of the OCI documentation page to read
-        max_length: Maximum number of characters to return
+        url: URL of the OCI documentation page to read        
         start_index: On return output starting at this character index
+        max_lines: Maximum number of lines to return
 
     Returns:
         Markdown content of the OCI documentation
@@ -229,45 +155,14 @@ async def read_documentation(
         await ctx.error(f'Invalid URL: {url_str}. URL must end with .htm or .html')
         raise ValueError('URL must end with .htm or .html')
 
-    logger.debug(f'Fetching documentation from {url_str}')
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(
-                url_str,
-                follow_redirects=True,
-                headers=DEFAULT_HEADERS,
-                timeout=30,
-            )
-        except httpx.HTTPError as e:
-            error_msg = f'Failed to fetch {url_str}: {str(e)}'
-            logger.error(error_msg)
-            await ctx.error(error_msg)
-            return error_msg
-
-        if response.status_code >= 400:
-            error_msg = f'Failed to fetch {url_str} - status code {response.status_code}'
-            logger.error(error_msg)
-            await ctx.error(error_msg)
-            return error_msg
-        response.encoding = 'utf-8'
-        page_raw = response.text
-        content_type = response.headers.get('content-type', '')
-
-    if is_html_content(page_raw, content_type):
-        content = extract_content_from_html(page_raw)
-    else:
-        content = page_raw
-
-    result = format_documentation_result(url_str, content, start_index, max_length)
-
-    # Log if content was truncated
-    if len(content) > start_index + max_length:
-        logger.debug(
-            f'Content truncated at {start_index + max_length} of {len(content)} characters'
-        )
-
-    return result
+    logger.debug(f'Reading documentation from {url_str} starting at line {start_index}')
+    try:
+        return await format_documentation_result(url_str, start_index, max_lines)
+    except Exception as e:
+        error_msg = f'Failed to read {url_str}: {str(e)}'
+        logger.error(error_msg)
+        await ctx.error(error_msg)
+        return error_msg
 
 
 
