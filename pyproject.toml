@@ -1,6 +1,6 @@
 [project]
 name = "oci-documentation-mcp-server"
-version = "0.0.1"
+version = "v20260519"
 description = "An  Model Context Protocol (MCP) server for OCI Documentation"
 readme = "README.md"
 requires-python = ">=3.10"
