@@ -25,25 +25,6 @@ MCP config:
 ```json
 {
   "mcpServers": {
-    "oci-documentation-mcp-server": {
-        "command": "uvx",
-        "args": ["oci-documentation-mcp-server@latest"],
-        "env": {
-          "FASTMCP_LOG_LEVEL": "ERROR"
-        },
-        "disabled": false,
-        "autoApprove": []
-    }
-  }
-}
-```
-
-
-It may be a little more complicated on Windows:
-
-```json
-{
-  "mcpServers": {
       "oci-documentation-mcp-server": {
         "command": "uvx",
         "args": [
@@ -59,6 +40,26 @@ It may be a little more complicated on Windows:
         "disabled": false,
         "autoApprove": []
     },
+  }
+}
+
+```
+
+
+If above doesn't work, try below one:
+
+```json
+{
+  "mcpServers": {
+    "oci-documentation-mcp-server": {
+        "command": "uvx",
+        "args": ["oci-documentation-mcp-server@latest"],
+        "env": {
+          "FASTMCP_LOG_LEVEL": "ERROR"
+        },
+        "disabled": false,
+        "autoApprove": []
+    }
   }
 }
 ```
