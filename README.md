@@ -6,6 +6,11 @@ Model Context Protocol (MCP) server for OCI Documentation
 
 This MCP server provides tools to search for content, and access OCI documentation.
 
+## Change log
+
+- 2026-5-19: change search engine to oracle help center search
+- 2025-4-21: Initial release
+
 ## Features
 
 - **Read Documentation**: Fetch and convert OCI documentation pages to markdown format
