@@ -252,7 +252,7 @@ async def _load_document_cache_entry(url: str) -> dict[str, Any]:
         'base_page_url': base_page_url,
         'lines': lines,
         'table_of_contents': _extract_table_of_contents(lines),
-        'related_links': _extract_markdown_links(base_page_url, markdown_text),
+        # 'related_links': _extract_markdown_links(base_page_url, markdown_text),
         'created_at': now
     }
 
@@ -283,7 +283,7 @@ def _format_line_window(entry: dict[str, Any], start_index: int, max_lines: int)
 
     if start_index == 0:
         result['table_of_contents'] = entry['table_of_contents']
-        result['related_links'] = entry['related_links']
+        # result['related_links'] = entry['related_links']
 
     result["content"] ='\n'.join(returned_lines)
 

@@ -16,13 +16,11 @@ import re
 import sys
 
 from oci_documentation_mcp_server.ohc_search import search_oci_documentation
-
-# Import utility functions
 from oci_documentation_mcp_server.util import (
     format_documentation_result,
 )
+from fastmcp import Context, FastMCP
 from loguru import logger
-from mcp.server.fastmcp import Context, FastMCP
 from pydantic import Field
 
 
@@ -49,11 +47,6 @@ mcp = FastMCP(
     - Use `oci_search_documentation` when: You need to find documentation about a specific OCI service or feature
     - Use `oci_read_documentation` when: You have a specific documentation URL and need its content
     """,
-    dependencies=[
-        'pydantic',
-        'httpx',
-        'beautifulsoup4',
-    ],
 )
 
 
@@ -172,22 +165,37 @@ def main():
     parser = argparse.ArgumentParser(
         description='An OCI Labs Model Context Protocol (MCP) server for OCI Documentation'
     )
-    parser.add_argument('--sse', action='store_true', help='Use SSE transport')
-    parser.add_argument('--port', type=int, default=8888, help='Port to run the server on')
+    parser.add_argument('--transport', type=str, default='stdio',
+                        choices=['stdio', 'sse', 'streamable-http'],
+                        help='Transport protocol to use (default: stdio)')
+    parser.add_argument('--host', type=str, default='0.0.0.0',
+                        help='Host to bind the server to (default: 0.0.0.0)')
+    parser.add_argument('--port', type=int, default=8000,
+                        help='Port to run the server on (default: 8000)')
+    parser.add_argument('--path', type=str, default='/mcp',
+                        help='HTTP endpoint path when using --transport sse or streamable-http (default: /mcp)')
 
     args = parser.parse_args()
 
     # Log startup information
     logger.info('Starting OCI Documentation MCP Server')
+    logger.info(f'Transport: {args.transport}')
 
     # Run server with appropriate transport
-    if args.sse:
-        logger.info(f'Using SSE transport on port {args.port}')
-        mcp.settings.port = args.port
-        mcp.run(transport='sse')
-    else:
-        logger.info('Using standard stdio transport')
+    if args.transport == 'stdio':
+        logger.info('Using stdio transport')
         mcp.run()
+    elif args.transport in {'sse', 'streamable-http'}:
+        logger.info(f'Using {args.transport} transport on {args.host}:{args.port}{args.path}')
+        mcp.run(
+            transport=args.transport,
+            host=args.host,
+            port=args.port,
+            path=args.path,
+        )
+    else:
+        logger.error(f'Invalid transport: {args.transport}')
+        sys.exit(1)
 
 
 if __name__ == '__main__':

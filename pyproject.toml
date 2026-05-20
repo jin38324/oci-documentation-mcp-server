@@ -1,12 +1,12 @@
 [project]
 name = "oci-documentation-mcp-server"
-version = "v20260519"
+version = "v20260520"
 description = "An  Model Context Protocol (MCP) server for OCI Documentation"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "markdownify>=1.1.0",
-    "mcp[cli]>=1.6.0",
+    "fastmcp>=2.12.0",
     "pydantic>=2.10.6",
     "httpx>=0.27.0",
     "loguru>=0.7.0",

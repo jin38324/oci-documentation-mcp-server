@@ -19,7 +19,7 @@ Keep the project small. Prefer direct, well-scoped helpers over new framework la
 
 - Package and environment manager: `uv`.
 - Runtime: Python 3.10+.
-- MCP framework: `mcp.server.fastmcp.FastMCP`.
+- MCP framework: standalone `fastmcp.FastMCP`.
 - HTTP client: `httpx`.
 - Data validation: `pydantic` v2.
 - HTML extraction and markdown conversion: `beautifulsoup4` and `markdownify`.
@@ -114,6 +114,7 @@ Use `uv` commands for dependency and lock-file maintenance.
 
 - Refresh the lock file after dependency metadata changes: `uv lock`.
 - Run the MCP server module locally: `uv run python -m oci_documentation_mcp_server.server`.
-- Run the server over SSE: `uv run python -m oci_documentation_mcp_server.server --sse --port 8888`.
+- Run the server over streamable HTTP: `uv run python -m oci_documentation_mcp_server.server --transport streamable-http --host 0.0.0.0 --port 8000 --path /mcp`.
+- Run the server over SSE: `uv run python -m oci_documentation_mcp_server.server --transport sse --host 0.0.0.0 --port 8000 --path /mcp`.
 - Run static checks when needed: `uv run ruff check .` and `uv run pyright`.
 - Run live MCP tests when network access is available: `uv run pytest tests/test_mcp.py -m live`.

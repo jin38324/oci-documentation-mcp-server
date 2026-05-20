@@ -8,4 +8,4 @@
 # and limitations under the License.
 """oci-documentation-mcp-server"""
 
-__version__ = '0.0.1'
+__version__ = 'v20260520'
