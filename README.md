@@ -72,7 +72,7 @@ Design notes:
 
 ### Option 1: Run from pypi package
 
-Defalt output through `stdio`, change that
+Defalt output through `stdio`, change that use `--transport` if you want.
 
 
 ```json
@@ -101,8 +101,8 @@ Defalt output through `stdio`, change that
 
 **Installation Requirements**
 
-1. Install `uv` from [Astral](https://docs.astral.sh/uv/getting-started/installation/) or the [GitHub README](https://github.com/astral-sh/uv#installation)
-2. Install Python 3.10 or newer using `uv python install 3.10` (or a more recent version)
+1. Doenload this repo. 
+2.Install `uv` from [Astral](https://docs.astral.sh/uv/getting-started/installation/) or the [GitHub README](https://github.com/astral-sh/uv#installation)
 
 
 ```json
@@ -128,9 +128,9 @@ Defalt output through `stdio`, change that
 }
 ```
 
-### Option 2: Run as server 
+### Option 3: Run as server 
 
-Run the server use `Streamable HTTP`:
+Run as server use `Streamable HTTP`:
 
 ```bash
 uv run python -m oci_documentation_mcp_server.server --transport "streamable-http" --port 8000 --path "/mcp"
@@ -149,25 +149,3 @@ Config on agent tools:
 }
 
 ```
-
-
-
-## Tools
-
-### oci_search_documentation
-
-Searches OCI documentation based on a search phrase.
-
-```python
-oci_search_documentation(search_phrase: str, limit: int = 3, page: int = 1) -> str
-```
-
-### oci_read_documentation
-
-Fetches an OCI documentation page and returns content partially as markdown.
-
-```python
-oci_read_documentation(url: str, start_index: int = 0, max_lines: int = 10) -> str
-```
-
-
